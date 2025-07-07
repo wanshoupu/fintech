@@ -1,0 +1,10 @@
+ipython
+pandas
+numpy
+pyparsing
+requests
+pytest
+pytest-asyncio
+pyarrow
+playwright
+pip-tools
