@@ -16,7 +16,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           service_account_key: ${{ secrets.GCP_SA_KEY }}
-          project_id: linviz-scraping-project
+          project_id: melodic-grammar-272515
 
       - name: Deploy DAGs to GCS
         run: |
