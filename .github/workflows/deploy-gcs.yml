@@ -20,5 +20,5 @@ jobs:
 
       - name: Deploy DAGs to GCS
         run: |
-          gsutil -m cp -r dags/* gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
-          gsutil -m cp -r mymodule gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
+          gsutil -m cp -r investment/dags/* gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
+          gsutil -m cp -r investment/utils gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
