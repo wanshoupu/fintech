@@ -1,0 +1,24 @@
+name: Deploy DAGs to GCS
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup gcloud CLI
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          service_account_key: ${{ secrets.GCP_SA_KEY }}
+          project_id: linviz-scraping-project
+
+      - name: Deploy DAGs to GCS
+        run: |
+          gsutil -m cp -r dags/* gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
+          gsutil -m cp -r mymodule gs://us-central1-linviz-scraping-bb899a79-bucket/dags/
