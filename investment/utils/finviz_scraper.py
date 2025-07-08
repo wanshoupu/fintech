@@ -62,7 +62,7 @@ async def _scrape(url, start_offset, length=None) -> TableData:
         )
         page = await context.new_page()
         while True:
-            print(f"Scraped page starting at record {start_offset}")
+            print(f"Scraping page at record {start_offset}")
             try:
                 await page.goto(url.format(offset=start_offset), wait_until='domcontentloaded')
                 await page.wait_for_selector('table.screener_table', timeout=15000)
