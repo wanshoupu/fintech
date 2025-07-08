@@ -28,6 +28,7 @@ async def scrape_to_file(view_type: FinVizView, start_offset: int = 1, length: i
     parquet_file = base_filename + '.parquet'
     df.to_csv(csv_file, index=False)
     df.to_parquet(parquet_file, index=False)
+    print(f'Wrote data to files: "{parquet_file}" and "{csv_file}"')
 
 
 async def scrape_finviz(view_type: FinVizView, start_offset=1, length=None) -> pd.DataFrame:
