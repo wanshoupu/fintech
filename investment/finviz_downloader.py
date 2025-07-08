@@ -12,6 +12,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     view_type = FinVizView[args.view]
-    start = args.offset
+    start = args.start
     length = args.length
     asyncio.run(scrape_to_file(view_type, start_offset=start, length=length))
