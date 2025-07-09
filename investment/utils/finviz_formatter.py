@@ -104,8 +104,10 @@ def smart_convert(s: pd.Series) -> pd.Series:
     return s  # fallback
 
 
-def format_finviz(df: pd.DataFrame) -> pd.DataFrame:
+def clean_finviz(df: pd.DataFrame) -> pd.DataFrame:
     formatted = df.apply(smart_convert)
+    formatted['Ticker'] = formatted['Ticker'].astype('string')
     formatted[['52W_Low', '52W_High']] = formatted['52W Range'].apply(lambda x: pd.Series(parse_52w_range(x)))
     del formatted['52W Range']
-    return formatted
+    del formatted['No.']
+    return formatted.select_dtypes(exclude=['object'])
