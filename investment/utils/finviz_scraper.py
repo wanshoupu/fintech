@@ -5,7 +5,7 @@ from investment.utils.finviz_views import TableData, FinVizView
 from investment.utils.headers import patch_dup_headers
 
 
-async def scrape_to_file(view_type: FinVizView, start_offset: int = 1, length: int = None, base_filename: str = None) -> None:
+async def scrape_to_file(view_type: FinVizView, start_offset: int = 1, length: int = None, base_filename: str = None) -> str:
     """
     Scrape finviz stocks data.
     :param view_type: FinVizView type.
@@ -21,14 +21,13 @@ async def scrape_to_file(view_type: FinVizView, start_offset: int = 1, length: i
 
     if df.empty:
         print("No data scraped.")
-        return
+        return ''
     print(df.head())
     base_filename = base_filename or f'finviz-{view_type.name}-{start_offset}-{start_offset + len(df)}'
-    csv_file = base_filename + '.csv'
     parquet_file = base_filename + '.parquet'
-    df.to_csv(csv_file, index=False)
     df.to_parquet(parquet_file, index=False)
-    print(f'Wrote data to files: "{parquet_file}" and "{csv_file}"')
+    print(f'Wrote data to files: "{parquet_file}"')
+    return parquet_file
 
 
 async def scrape_finviz(view_type: FinVizView, start_offset=1, length=None) -> pd.DataFrame:
