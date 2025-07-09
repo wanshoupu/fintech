@@ -29,9 +29,11 @@ def upload_to_gcs(bucket_name, object_name, local_file):
 
 def asyncio_scrape(**context):
     ds = context['ds']  # 'YYYY-MM-DD' string
-    filename = f'{ds}.parquet'
     scraped_file = asyncio.run(scrape_to_file(FinVizView.ALL, start_offset=1, base_filename=ds))
-    upload_to_gcs(GBUCKET, os.path.join(FINVIZ_RAW, filename), scraped_file)
+
+    filename = f'{ds}.parquet'
+    output_file = os.path.join(FINVIZ_RAW, filename)
+    upload_to_gcs(GBUCKET, output_file, scraped_file)
 
 
 def data_cleaning(**context):
