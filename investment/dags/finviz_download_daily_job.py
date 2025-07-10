@@ -20,6 +20,7 @@ GBUCKET = 'us-central1-linviz-scraping-bb899a79-bucket'
 FINVIZ_RAW = 'finviz-raw'
 FINVIZ_CLEAN = 'finviz-clean'
 FINVIZ_BLUECHIPS = 'finviz-bluechips'
+ESTIMATED_LENGTH = 10_500
 
 
 def upload_to_gcs(bucket_name, object_name, local_file):
@@ -27,38 +28,34 @@ def upload_to_gcs(bucket_name, object_name, local_file):
     hook.upload(bucket_name=bucket_name, object_name=object_name, filename=local_file)
 
 
-def data_scrape(**context):
-    ds = context['ds']  # 'YYYY-MM-DD' string
-    scraped_file = scrape_to_file(FinVizView.ALL, offset=1, filename=ds)
+def data_scrape(ds, offset, length, filename):
+    scraped_file = scrape_to_file(FinVizView.ALL, offset=offset, length=length, filename=filename)
 
-    filename = f'{ds}.parquet'
-    output_file = os.path.join(FINVIZ_RAW, filename)
+    output_file = os.path.join(FINVIZ_RAW, ds, filename)
     upload_to_gcs(GBUCKET, output_file, scraped_file)
 
 
-def data_cleaning(**context):
-    ds = context['ds']  # 'YYYY-MM-DD' string
-    filename = f'{ds}.parquet'
-    input_file = os.path.join(FINVIZ_RAW, filename)
+def data_cleaning(ds, filenames):
+    inputs = [os.path.join(FINVIZ_RAW, ds, f) for f in filenames]
+    df = pd.concat([pd.read_parquet(fp) for fp in inputs], ignore_index=True)
 
-    df = pd.read_parquet(input_file)
     df = clean_finviz(df)
+    filename = f'{ds}.parquet'
     df.to_parquet(filename, index=False)
 
-    output_file = os.path.join(FINVIZ_CLEAN, filename)
+    output_file = os.path.join(FINVIZ_CLEAN, ds, filename)
     upload_to_gcs(GBUCKET, output_file, filename)
 
 
-def data_bluechips(**context):
-    ds = context['ds']  # 'YYYY-MM-DD' string
+def data_bluechips(ds):
     filename = f'{ds}.parquet'
-    input_file = os.path.join(FINVIZ_CLEAN, filename)
+    input_file = os.path.join(FINVIZ_CLEAN, ds, filename)
 
     df = pd.read_parquet(input_file)
     df = bluechips(df)
     df.to_parquet(filename, index=False)
 
-    output_file = os.path.join(FINVIZ_BLUECHIPS, filename)
+    output_file = os.path.join(FINVIZ_BLUECHIPS, ds, filename)
     upload_to_gcs(GBUCKET, output_file, filename)
 
 
@@ -70,16 +67,24 @@ with DAG(
         catchup=False,  # Don't backfill runs before today
         tags=['etl', 'scrape'],
 ) as dag:
-    data_scrape_task = PythonOperator(
-        task_id='data_scrape',
+    data_scrape_task = lambda offset, length, filename: PythonOperator(
+        task_id=f'data_scrape_{offset}_{length}',
         python_callable=data_scrape,
+        op_args=[offset, length, filename],
     )
+    offsets = [offset for offset in range(1, ESTIMATED_LENGTH, 1000)]
+    lengths = [1000] * len(offsets)
+    filenames = [f'{offset}-{length}.parquet' for offset, length in zip(offsets, lengths)]
+    scrape_tasks = [data_scrape_task(o, l, f) for o, l, f in zip(offsets, lengths, filenames)]
+
     data_cleaning_task = PythonOperator(
         task_id='data_cleaning',
         python_callable=data_cleaning,
+        op_args=[filenames],
+
     )
     data_bluechips_task = PythonOperator(
         task_id='data_bluechips',
         python_callable=data_bluechips,
     )
-    data_scrape_task >> data_cleaning_task >> data_bluechips_task
+    scrape_tasks >> data_cleaning_task >> data_bluechips_task
