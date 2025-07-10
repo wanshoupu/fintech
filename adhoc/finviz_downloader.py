@@ -1,4 +1,3 @@
-import asyncio
 import argparse
 
 from investment.utils.finviz_scraper import scrape_to_file
@@ -14,5 +13,5 @@ if __name__ == '__main__':
     view_type = FinVizView[args.view]
     start = args.start
     length = args.length
-    fn = asyncio.run(scrape_to_file(view_type, start_offset=start, length=length))
+    fn = scrape_to_file(view_type, offset=start, length=length)
     print(fn)

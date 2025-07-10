@@ -27,9 +27,9 @@ def upload_to_gcs(bucket_name, object_name, local_file):
     hook.upload(bucket_name=bucket_name, object_name=object_name, filename=local_file)
 
 
-def asyncio_scrape(**context):
+def data_scrape(**context):
     ds = context['ds']  # 'YYYY-MM-DD' string
-    scraped_file = asyncio.run(scrape_to_file(FinVizView.ALL, start_offset=1, base_filename=ds))
+    scraped_file = scrape_to_file(FinVizView.ALL, offset=1, filename=ds)
 
     filename = f'{ds}.parquet'
     output_file = os.path.join(FINVIZ_RAW, filename)
@@ -70,9 +70,9 @@ with DAG(
         catchup=False,  # Don't backfill runs before today
         tags={'etl', 'scrape'},
 ) as dag:
-    scrape_task = PythonOperator(
-        task_id='asyncio_scrape',
-        python_callable=asyncio_scrape,
+    data_scrape_task = PythonOperator(
+        task_id='data_scrape',
+        python_callable=data_scrape,
         provide_context=True,
     )
     data_cleaning_task = PythonOperator(
@@ -85,4 +85,4 @@ with DAG(
         python_callable=data_bluechips,
         provide_context=True,
     )
-    scrape_task >> data_cleaning_task >> data_bluechips_task
+    data_scrape_task >> data_cleaning_task >> data_bluechips_task

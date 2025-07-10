@@ -4,9 +4,9 @@ numpy
 pyparsing
 requests
 pytest
-pytest-asyncio
 pyarrow
-playwright
+beautifulsoup4
+
 pip-tools
 apache-airflow
 apache-airflow-providers-google
