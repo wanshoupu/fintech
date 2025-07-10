@@ -73,16 +73,13 @@ with DAG(
     data_scrape_task = PythonOperator(
         task_id='data_scrape',
         python_callable=data_scrape,
-        provide_context=True,
     )
     data_cleaning_task = PythonOperator(
         task_id='data_cleaning',
         python_callable=data_cleaning,
-        provide_context=True,
     )
     data_bluechips_task = PythonOperator(
         task_id='data_bluechips',
         python_callable=data_bluechips,
-        provide_context=True,
     )
     data_scrape_task >> data_cleaning_task >> data_bluechips_task
