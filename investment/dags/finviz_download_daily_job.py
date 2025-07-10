@@ -68,7 +68,7 @@ with DAG(
         schedule='@daily',  # <- Run daily
         start_date=datetime(2025, 1, 1),
         catchup=False,  # Don't backfill runs before today
-        tags={'etl', 'scrape'},
+        tags=['etl', 'scrape'],
 ) as dag:
     data_scrape_task = PythonOperator(
         task_id='data_scrape',
