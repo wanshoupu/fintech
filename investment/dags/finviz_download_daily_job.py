@@ -37,7 +37,7 @@ def data_scrape(offset, length, filename, **kwargs):
 
 def data_cleaning(filenames, **kwargs):
     ds = kwargs['ds']
-    inputs = [os.path.join(FINVIZ_RAW, ds, f) for f in filenames]
+    inputs = [os.path.join(f'gs://{GBUCKET}', FINVIZ_RAW, ds, f) for f in filenames]
     df = pd.concat([pd.read_parquet(fp) for fp in inputs], ignore_index=True)
 
     df = clean_finviz(df)
@@ -51,7 +51,7 @@ def data_cleaning(filenames, **kwargs):
 def data_bluechips(**kwargs):
     ds = kwargs['ds']
     filename = f'{ds}.parquet'
-    input_file = os.path.join(FINVIZ_CLEAN, ds, filename)
+    input_file = os.path.join(f'gs://{GBUCKET}', FINVIZ_CLEAN, ds, filename)
 
     df = pd.read_parquet(input_file)
     df = bluechips(df)
