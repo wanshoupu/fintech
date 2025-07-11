@@ -17,9 +17,9 @@ from airflow.providers.google.cloud.hooks.gcs import GCSHook
 
 GBUCKET = 'us-central1-linviz-scraping-bb899a79-bucket'
 
-FINVIZ_RAW = 'finviz-raw'
-FINVIZ_CLEAN = 'finviz-clean'
-FINVIZ_BLUECHIPS = 'finviz-bluechips'
+FINVIZ_RAW = 'data/finviz-raw'
+FINVIZ_CLEAN = 'data/finviz-clean'
+FINVIZ_BLUECHIPS = 'data/finviz-bluechips'
 ESTIMATED_LENGTH = 10_500
 
 
@@ -28,14 +28,15 @@ def upload_to_gcs(bucket_name, object_name, local_file):
     hook.upload(bucket_name=bucket_name, object_name=object_name, filename=local_file)
 
 
-def data_scrape(ds, offset, length, filename):
+def data_scrape(offset, length, filename, **kwargs):
     scraped_file = scrape_to_file(FinVizView.ALL, offset=offset, length=length, filename=filename)
-
+    ds = kwargs['ds']
     output_file = os.path.join(FINVIZ_RAW, ds, filename)
     upload_to_gcs(GBUCKET, output_file, scraped_file)
 
 
-def data_cleaning(ds, filenames):
+def data_cleaning(filenames, **kwargs):
+    ds = kwargs['ds']
     inputs = [os.path.join(FINVIZ_RAW, ds, f) for f in filenames]
     df = pd.concat([pd.read_parquet(fp) for fp in inputs], ignore_index=True)
 
@@ -47,7 +48,8 @@ def data_cleaning(ds, filenames):
     upload_to_gcs(GBUCKET, output_file, filename)
 
 
-def data_bluechips(ds):
+def data_bluechips(**kwargs):
+    ds = kwargs['ds']
     filename = f'{ds}.parquet'
     input_file = os.path.join(FINVIZ_CLEAN, ds, filename)
 
@@ -81,8 +83,8 @@ with DAG(
         task_id='data_cleaning',
         python_callable=data_cleaning,
         op_args=[filenames],
-
     )
+
     data_bluechips_task = PythonOperator(
         task_id='data_bluechips',
         python_callable=data_bluechips,
