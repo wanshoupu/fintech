@@ -21,6 +21,7 @@ FINVIZ_RAW = 'data/finviz-raw'
 FINVIZ_CLEAN = 'data/finviz-clean'
 FINVIZ_BLUECHIPS = 'data/finviz-bluechips'
 ESTIMATED_LENGTH = 10_500
+BATCH_SIZE = 5000
 
 
 def upload_to_gcs(bucket_name, object_name, local_file):
@@ -74,8 +75,8 @@ with DAG(
         python_callable=data_scrape,
         op_args=[offset, length, filename],
     )
-    offsets = [offset for offset in range(1, ESTIMATED_LENGTH, 1000)]
-    lengths = [1000] * len(offsets)
+    offsets = [offset for offset in range(1, ESTIMATED_LENGTH, BATCH_SIZE)]
+    lengths = [BATCH_SIZE] * len(offsets)
     filenames = [f'{offset}-{length}.parquet' for offset, length in zip(offsets, lengths)]
     scrape_tasks = [data_scrape_task(o, l, f) for o, l, f in zip(offsets, lengths, filenames)]
 
