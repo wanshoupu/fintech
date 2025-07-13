@@ -64,6 +64,9 @@ def parse_52w_range(range_str: str):
 
 
 def smart_convert(s: pd.Series) -> pd.Series:
+    if s.dropna().dtype != 'object' or not pd.api.types.is_string_dtype(s):
+        return s
+
     s = s.replace('-', pd.NA)
 
     # Try datetime
@@ -107,7 +110,9 @@ def smart_convert(s: pd.Series) -> pd.Series:
 def clean_finviz(df: pd.DataFrame) -> pd.DataFrame:
     formatted = df.apply(smart_convert)
     formatted['Ticker'] = formatted['Ticker'].astype('string')
-    formatted[['52W_Low', '52W_High']] = formatted['52W Range'].apply(lambda x: pd.Series(parse_52w_range(x)))
-    del formatted['52W Range']
-    del formatted['No.']
+    if '52W Range' in formatted.columns:
+        formatted[['52W_Low', '52W_High']] = formatted['52W Range'].apply(lambda x: pd.Series(parse_52w_range(x)))
+        del formatted['52W Range']
+    if 'No.' in formatted.columns:
+        del formatted['No.']
     return formatted.select_dtypes(exclude=['object'])
