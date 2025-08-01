@@ -6,8 +6,11 @@ requests
 pytest
 pyarrow
 beautifulsoup4
-
-pip-tools
-apache-airflow
-apache-airflow-providers-google
 pandasgui
+PyYAML
+tqdm
+python-dotenv
+retry
+# pip-tools
+# apache-airflow
+# apache-airflow-providers-google
