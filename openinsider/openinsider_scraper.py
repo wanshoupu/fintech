@@ -134,7 +134,7 @@ class OpenInsiderScraper:
         start_date = datetime(year, month, 1).strftime('%m/%d/%Y')
         end_date = (datetime(year, month, 1) + timedelta(days=32)).replace(day=1) - timedelta(days=1)
         end_date = end_date.strftime('%m/%d/%Y')
-
+        # these are the trade types: xp=1&xs=1&xa=1&xd=1&xg=1
         url = f'http://openinsider.com/screener?s=&o=&pl=&ph=&ll=&lh=&fd=-1&fdr={start_date}+-+{end_date}&td=0&tdr=&fdlyl=&fdlyh=&daysago=&xp=1&xs=1&vl=&vh=&ocl=&och=&sic1=-1&sicl=100&sich=9999&grp=0&nfl=&nfh=&nil=&nih=&nol=&noh=&v2l=&v2h=&oc2l=&oc2h=&sortcol=0&cnt=5000&page=1'
 
         try:
